@@ -2,8 +2,8 @@ const request = require("request");
 const express = require("express");
 const app = express();
 
-const RESPONSE_TIMEOUT = 15000 // 15s
-const ACCESS_TOKEN = "PLEASE_PUT_TOKEN_HERE"
+const RESPONSE_TIMEOUT = 15000; // 15s
+const ACCESS_TOKEN = "PLEASE_PUT_TOKEN_HERE";
 
 // Retrieves some JSON data from a URL using the ACCESS_TOKEN to be reused
 function GetJSONDataFromURL(url) {
@@ -19,22 +19,33 @@ function GetJSONDataFromURL(url) {
 
   // Return a Promise for HTTP request
   return new Promise(function(resolve, reject) {
-    var data = "";
     var req = request(options);
 
-    req.on('data', function(chunk) {
-      // Join the data
-      data += chunk;
-    });
+    req.on("response", function(response) {
+      let data = "";
+      response.on("data", function(chunk) {
+        data += chunk;
+      });
 
-    req.on('end', function() {
-      try {
-        var output = JSON.parse(data);
-        resolve(output);
-      } catch (e) {
+      response.on("end", function() {
+        // Check for statusCode and handle correctly
+        if (response.statusCode == 200) { // SUCCESS
+          try {
+            var output = JSON.parse(data);
+            resolve(output);
+          } catch (e) {
+            resolve();
+            // reject({error: "Data returned was invalid (JSON)", errorCode: "E-02", content: e}); // reject with error code
+          }
+        }
+        if (response.statusCode == 403) { // CREDENTIAL ISSUE
+          console.log("Recieved 403 response; please check that you have the correct credentials!")
+          resolve();
+        }
+        // FEATURE: Extend with other statusCodes as required
         resolve();
         // reject({error: "Data returned was invalid (JSON)", errorCode: "E-02", content: e}); // reject with error code
-      }
+      });
     });
 
     req.on('error', function(e) {
