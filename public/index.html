@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cinemaworld and Filmworld API Test</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="default.css" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js" integrity="sha256-owX7sroiO/O1a7h3a4X29A1g3QgqdNvijRQ7V5TH45M=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <header>
+      <p>Once the movies have loaded, click the movie you're interested to see the best available prices for that movie from Cinemaworld or Filmworld</p>
+    </header>
+    <br>
+    <main>
+      <div id="container-movies">
+        <h2>Movie List</h2>
+        <!-- ko if: isMoviesLoading -->
+          <h3>Movies are loading...</h3>
+        <!-- /ko -->
+        <!-- ko if: isEmptyMovies -->
+          <h3>Sorry, we have no movies available at the moment, please refresh the page and try again</h3>
+        <!-- /ko -->
+        <div data-bind="foreach:MoviesSorted">
+          <div data-bind="click: $parent.GetMovieDetail"><span data-bind="text:Title"></span> (<span data-bind="text:Year"></span>)</div><br>
+        </div>
+      </div>
+      <div id="container-detail">
+        <h2>Movie Detail</h2>
+        <!-- ko if: MovieDetail -->
+          <div data-bind="foreach:MovieDetail">
+            <span data-bind="text:Title"></span> (<span data-bind="text:Source"></span>) is $<span data-bind="text:Price"></span><br>
+          </div>
+        <!-- /ko -->
+        <br>
+        <!-- ko if: BestMovie -->
+          <div data-bind="with: BestMovie">
+            Your best choice is <span data-bind="text: Title"></span> by <span data-bind="text: Source"></span> at $<span data-bind="text: Price"></span>
+          </div>
+        <!-- /ko -->
+      </div>
+    </main>
+  </body>
+  <script>
+    function ViewModel() {
+      var self = this;
+
+      self.isMoviesLoading = ko.observable(false);
+      self.isEmptyMovies = ko.pureComputed(function() {
+        return (self.MoviesSorted().length == 0) && !self.isMoviesLoading();
+      })
+
+      self.MovieDetail = ko.observableArray();
+      self.Movies = ko.observableArray();
+      self.MoviesSorted = ko.pureComputed(function() {
+        return self.Movies().sort(function(a,b) {
+          if (a.Title < b.Title)
+            return -1;
+          if (a.Title > b.Title)
+            return 1;
+          return 0;
+        });
+      });
+
+      self.LoadMovies = function() {
+        self.isMoviesLoading(true);
+        $.ajax({
+          url: "http://localhost:3000/api/movies",
+          success: function(data, text) {
+            if (text=="success") {
+              self.Movies(data);
+            }
+          },
+          type: "GET",
+          cache: false
+        })
+        .done(function(data) {
+          self.isMoviesLoading(false);
+        })
+      }
+
+      self.GetMovieDetail = function(movie) {
+        var id = movie.ID;
+        $.ajax({
+          url: "http://localhost:3000/api/movie/" + id,
+          success: function(data, text) {
+            VM.MovieDetail(data);
+          },
+          type: "GET",
+          cache: false
+        });
+      }
+
+      self.BestMovie = ko.pureComputed(function() {
+        var movies = self.MovieDetail();
+
+        if (movies.length < 1) {
+          return undefined;
+        }
+
+        return movies.reduce(function(prev, cur) {
+          return parseInt(prev["Price"]) < parseInt(cur["Price"]) ? prev : cur;
+        });
+      });
+
+      // Execute the main loading function
+      self.LoadMovies();
+    }
+
+    var VM = new ViewModel();
+    ko.applyBindings(VM);
+  </script>
+</html>

@@ -1,0 +1,50 @@
+Following from the "Key Points for Candidates"
+  The solution must be completed in Nodejs
+    Solution is completed in Nodejs and provides frontend and backend in one package (public folder is set as accessable)
+
+  Email the link for the source code once complete, or push it into Git hub.
+    Will push into Github if possible
+
+  If you are able to host the solution somewhere that would be great, but not required.
+    Rather than spend time setting up Heroku and deploying, the script can be run with 'node app.js' or run.bat
+
+  The test specifically makes mention of the flakey nature of the APIs. You should design a solution to have a functioning app when not all of the services behind the scene are functioning at 100 %.
+    The system is setup using Promises and Async calls to provide an optimal response time for the customers (the cut off is 15 seconds). If the call takes more than 15 seconds OR there was an issue with the call, such as the API being unavailable, the script will continue, logging an issue, and return whatever results are left. If the results that are returned are infact empty, the frontend displays a message to the customer to indicate that we're having issues and to retry later. Not much else you can do if the APIs are down.
+
+  The goal of the test is to allow you to present your best code that you feel proud off.
+    I can say I'm happy with this code and do feel proud of it enough to showcase what I know and how I operate.
+
+Following from the "http://webjetapitest.azurewebsites.net/" site
+  Build a web app to allow customers to get the cheapest price for movies from these two providers in a timely manner.
+    Frontend webpage provides a list of movies for the customer, and then they can select which product that they'd like to see.
+
+  Feel free to make and document any assumptions you have made.
+    This document is it :)
+
+  The API token provided to you should not be exposed to the public.
+    Specifically, I designed this middleman as a way of not exposing the API token to the frontend (public), as calls made from the browser fail and would potentially reveal this information.
+
+
+
+Here are my assumptions:
+  No Caching as to provide current prices on movies
+    Caching introduces more issues, especially since the results are to be price-sensitive, having cached data introduces more issues and doesn't provide as much benefit (if API is down, how can you purchase?)
+
+  Sources maintain constant prefixing of IDs between each other (prefix is only changing component)
+    Cinemaworld prefix IDs with 'cw'
+    Filmworld prefix IDs with 'fw'
+
+I'd prefer to use IDs on the basis that an ID is more likely to be unique than a Title of movie, but either is possible.
+
+Also decided to resolve on issues pulling back request incase the data pulled is invalid JSON or another issue, this was done so that the final promise can merge all the data together, so incase both fail, it will just return an empty array, instead of throwing an error. The frontend is designed with the idea that there could be zero results and provides a message to the user if this ever occurs.
+
+
+
+Frontend uses:
+  -jQuery
+  -KnockoutJS
+
+Backend uses:
+  -NodeJS
+  -Express
+  -Request

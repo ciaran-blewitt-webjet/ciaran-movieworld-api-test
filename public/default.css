@@ -1,0 +1,33 @@
+html {
+  background-color: #222;
+}
+
+h2 {
+  text-align: center;
+}
+
+header {
+  background-color: #ddd;
+  padding: 4px;
+  width: 100%;
+  border: 2px solid gray;
+  border-radius: 8px;
+}
+
+#container-movies {
+  background-color: #ddd;
+  padding: 4px;
+  width: 40%;
+  float: left;
+  border: 2px solid gray;
+  border-radius: 8px;
+}
+
+#container-detail {
+  background-color: #ccc;
+  padding: 4px;
+  width: 40%;
+  float: right;
+  border: 2px solid gray;
+  border-radius: 8px;
+}
